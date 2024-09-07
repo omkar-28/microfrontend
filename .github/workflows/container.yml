@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'packages/container/**'
+  workflow_dispatch:
 
 defaults:
   run:
@@ -17,6 +18,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Debug info
+        run: |
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Event: ${{ github.event_name }}"
       - run: npm install
       - run: npm run build
         env:
