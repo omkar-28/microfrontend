@@ -6,43 +6,27 @@ on:
       - main
     paths:
       - 'packages/marketing/**'
-  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: packages/marketing
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: npm run build
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'  # specify the Node.js version if needed
-
-      - name: Install dependencies
-        run: npm install
-        working-directory: packages/marketing
-
-      - name: Build project
-        run: npm run build
-        env:
-          PRODUCTION_DOMAIN: ${{ secrets.PRODUCTION_DOMAIN }}
-        working-directory: packages/marketing
-
-      - name: Sync files to S3
-        uses: shinyinc/action-aws-cli@v1.2
-        with:
-          args: s3 sync dist s3://${{ secrets.AWS_S3_BUCKET_NAME }}/marketing/latest
+      - uses: chrislennon/action-aws-cli@v1.1
+      - run: aws s3 sync dist s3://${{ secrets.AWS_S3_BUCKET_NAME }}/marketing/latest
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Create CloudFront Invalidation
-        uses: shinyinc/action-aws-cli@v1.2
-        with:
-          args: cloudfront create-invalidation --distribution-id ${{ secrets.AWS_DISTRIBUTION_ID }} --paths "/marketing/latest/remoteEntry.js"
+      - run: aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_DISTRIBUTION_ID }} --paths "/marketing/latest/remoteEntry.js"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
