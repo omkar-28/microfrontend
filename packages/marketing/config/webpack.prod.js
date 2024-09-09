@@ -10,6 +10,7 @@ const prodConfig = {
     output: {
         filename: '[name].[contenthash].js',
         chunkFilename: '[name].[contenthash].js',
+        publicPath: `/marketing/latest/`,
     },
     plugins: [
         new ModuleFederationPlugin({
